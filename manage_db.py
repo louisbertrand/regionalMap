@@ -2,24 +2,32 @@ import sqlite3
 
 def create_table():
     sql_create = '''
-        -- Create the table if it doesn't exist, and ensure 'when_captured' allows NULL
+        -- Create the table if it doesn't exist,
+        -- and ensure 'when_captured' allows NULL
         CREATE TABLE IF NOT EXISTS measurements (
-          device_urn VARCHAR PRIMARY KEY,
-          when_captured TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          device_sn VARCHAR,
-          device VARCHAR,
-          loc_name VARCHAR,
-          loc_country VARCHAR,
-          loc_lat FLOAT,
-          loc_lon FLOAT,
-          env_temp FLOAT,
-          lnd_7318c VARCHAR,
-          lnd_7318u FLOAT,
-          lnd_7128ec VARCHAR,
-          pms_pm02_5 VARCHAR,
-          bat_voltage FLOAT,
-          dev_temp FLOAT,
-          device_filename VARCHAR
+            device_urn VARCHAR PRIMARY KEY,
+            when_captured TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            bat_voltage FLOAT,
+            dev_dashboard VARCHAR,
+            dev_orientation VARCHAR,
+            dev_temp FLOAT,
+            device VARCHAR,
+            device_contact_email VARCHAR,
+            device_contact_name VARCHAR,
+            device_sn VARCHAR,
+            env_humid FLOAT,
+            env_press FLOAT,
+            env_temp FLOAT,
+            lnd_7318c FLOAT,
+            lnd_7318u FLOAT,
+            lnd_7128ec FLOAT,
+            loc_country VARCHAR,
+            loc_lat FLOAT,
+            loc_lon FLOAT,
+            loc_name VARCHAR,
+            pms_aqi FLOAT,
+            pms_pm02_5 FLOAT,
+            device_filename VARCHAR
         );
         '''
     with sqlite3.connect("measurements.sqlite") as conn:
@@ -34,21 +42,28 @@ def insert_data(rec):
         INSERT OR IGNORE INTO measurements (
           device_urn,
           when_captured,
-          device_sn,
-          device,
-          loc_name,
-          loc_country,
-          loc_lat,
-          loc_lon,
-          env_temp,
-          lnd_7318c,
-          lnd_7318u,
-          lnd_7128ec,
-          pms_pm02_5,
-          bat_voltage,
-          dev_temp,
+            bat_voltage,
+            dev_dashboard,
+            dev_orientation,
+            dev_temp,
+            device,
+            device_contact_email,
+            device_contact_name,
+            device_sn,
+            env_humid,
+            env_press,
+            env_temp,
+            lnd_7318c,
+            lnd_7318u,
+            lnd_7128ec,
+            loc_country,
+            loc_lat,
+            loc_lon,
+            loc_name,
+            pms_aqi,
+            pms_pm02_5,
           device_filename
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         '''
     with sqlite3.connect("measurements.sqlite") as conn:
         curs = conn.cursor()
@@ -57,19 +72,26 @@ def insert_data(rec):
         curs.execute(sql_insert,
                      (rec['device_urn'],
                         rec['when_captured'],
-                        rec['device_sn'],
+                        rec['bat_voltage'],
+                        rec['dev_dashboard'],
+                        rec['dev_orientation'],
+                        rec['dev_temp'],
                         rec['device'],
-                        rec['loc_name'],
-                        rec['loc_country'],
-                        rec['loc_lat'],
-                        rec['loc_lon'],
+                        rec['device_contact_email'],
+                        rec['device_contact_name'],
+                        rec['device_sn'],
+                        rec['env_humid'],
+                        rec['env_press'],
                         rec['env_temp'],
                         rec['lnd_7318c'],
                         rec['lnd_7318u'],
                         rec['lnd_7128ec'],
+                        rec['loc_country'],
+                        rec['loc_lat'],
+                        rec['loc_lon'],
+                        rec['loc_name'],
+                        rec['pms_aqi'],
                         rec['pms_pm02_5'],
-                        rec['bat_voltage'],
-                        rec['dev_temp'],
                         device_filename
                     ))
         conn.commit()
@@ -82,15 +104,26 @@ def update_data(rec):
         UPDATE measurements SET 
           device_urn = ?,
           when_captured = ?,
-          loc_lat = ?,
-          loc_lon = ?,
-          env_temp = ?,
-          lnd_7318c = ?,
-          lnd_7318u = ?,
-          lnd_7128ec = ?,
-          pms_pm02_5 = ?,
-          bat_voltage = ?,
-          dev_temp = ?
+            bat_voltage = ?,
+            dev_dashboard = ?,
+            dev_orientation = ?,
+            dev_temp = ?,
+            device = ?,
+            device_contact_email = ?,
+            device_contact_name = ?,
+            device_sn = ?,
+            env_humid = ?,
+            env_press = ?,
+            env_temp = ?,
+            lnd_7318c = ?,
+            lnd_7318u = ?,
+            lnd_7128ec = ?,
+            loc_country = ?,
+            loc_lat = ?,
+            loc_lon = ?,
+            loc_name = ?,
+            pms_aqi = ?,
+            pms_pm02_5 = ?
         WHERE device_urn = ? AND timediff(?, when_captured) > 0;
         '''
     with sqlite3.connect("measurements.sqlite") as conn:
@@ -98,22 +131,34 @@ def update_data(rec):
         device_filename = f"{rec['device_urn']}.json"
 
         curs.execute(sql_update,
-                     (rec['device_urn'],
-                        rec['when_captured'],
-                        rec['loc_lat'],
-                        rec['loc_lon'],
-                        rec['env_temp'],
-                        rec['lnd_7318c'],
-                        rec['lnd_7318u'],
-                        rec['lnd_7128ec'],
-                        rec['pms_pm02_5'],
-                        rec['bat_voltage'],
-                        rec['dev_temp'],
-                        rec['device_urn'],
-                        rec['when_captured']
+                    (rec['device_urn'],
+                    rec['when_captured'],
+                    rec['bat_voltage'],
+                    rec['dev_dashboard'],
+                    rec['dev_orientation'],
+                    rec['dev_temp'],
+                    rec['device'],
+                    rec['device_contact_email'],
+                    rec['device_contact_name'],
+                    rec['device_sn'],
+                    rec['env_humid'],
+                    rec['env_press'],
+                    rec['env_temp'],
+                    rec['lnd_7318c'],
+                    rec['lnd_7318u'],
+                    rec['lnd_7128ec'],
+                    rec['loc_country'],
+                    rec['loc_lat'],
+                    rec['loc_lon'],
+                    rec['loc_name'],
+                    rec['pms_aqi'],
+                    rec['pms_pm02_5'],
+                    rec['device_urn'], # In WHERE clause
+                    rec['when_captured']
                     ))
+        nrows = curs.rowcount
         conn.commit()
-    return curs.rowcount
+    return nrows
 
 
 if __name__ == "__main__":
