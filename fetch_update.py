@@ -1,17 +1,24 @@
+'''Function to update the database from tt server. It pulls down all the devices
+and updates the table where the timestamp is later than existing.
+This function could eventually become the worker in a thread.'''
+
 import requests
+
 import manage_db
+import constants
 
-manage_db.create_table()
+def get_update():
+    URL = constants.URL
 
-# URL = "https://tt.safecast.org/devices?template={\"when_captured\":\"\",\"device_urn\":\"\",\"device_sn\":\"\",\"device\":\"\",\"loc_name\":\"\",\"loc_country\":\"\",\"loc_lat\":0.0,\"loc_lon\":0.0,\"env_temp\":0.0,\"lnd_7318c\":\"\",\"lnd_7318u\":0.0,\"lnd_7128ec\":\"\",\"pms_pm02_5\":\"\",\"bat_voltage\":\"\",\"dev_temp\":0.0}"
-URL =  "https://tt.safecast.org/devices?template={\"device_urn\":\"\",\"loc_name\":\"\",\"loc_country\":\"\",\"device_sn\":\"\",\"loc_lat\":0.0,\"loc_lon\":0.0,\"device_contact_name\":\"\",\"device_contact_email\":\"\",\"device\":0,\"when_captured\":\"\",\"env_temp\":0.0,\"env_humid\":0.0,\"env_press\":0.0,\"bat_voltage\":0.0,\"lnd_7318c\":0.0,\"lnd_7318u\":0.0,\"lnd_7128ec\":0.0,\"pms_pm02_5\":0.0,\"pms_aqi\":0.0,\"dev_temp\":0.0,\"dev_orientation\":\"\",\"dev_dashboard\":\"\"}"
-req = requests.get(URL)
-if not req.ok:
-    print("Error refreshing the database. Exiting...")
-    exit(0)
-json = req.json()
+    req = requests.get(URL)
+    if not req.ok:
+        print("Error reading the database. Returning...")
+        return
+    json = req.json()
 
-for j in json:
-    nrows = manage_db.update_data(j)
-print(f'{nrows} updated.')
+    for j in json:
+        nrows = manage_db.update_data(j)
 
+
+if __name__ == '__main__':
+    get_update()
