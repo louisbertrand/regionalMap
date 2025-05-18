@@ -11,6 +11,13 @@ apt packages to install
 uvicorn  # FastAPI server
 supervisor  # Daemonize an app and restart it as needed
 
+On FreeBSD with pkg
+doas pkg install py311-uvicorn
+doas pkg install supervisor
+doas pkg install py311-wsgi_xmlrpc
+
+
+
 You may need the Rust compiler to install some Python modules.
 
 Create a virtual environment under your application directory and activate it.
@@ -47,4 +54,7 @@ Type CTRL-C to see the shutdown messages
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     Finished server process [100419]
+
+Linux: copy fastapi.conf 
+FreeBSD: stitch the contents into /usr/local/etc/supervisord.conf
 
