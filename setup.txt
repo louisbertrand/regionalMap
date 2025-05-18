@@ -1,11 +1,18 @@
 Setup Instructions
 
+I am following the example from Dylan Castillo
+https://dylancastillo.co/posts/fastapi-nginx-gunicorn.html
+And the example project at:
+https://github.com/dylanjcastillo/fastapi-nginx-gunicorn
+
 This article explains about the ASGI interface for Python web apps.
 https://www.infoworld.com/article/2335107/asgi-explained-the-future-of-python-web-development.html
 
 Find out more about FastAPI
 https://fastapi.tiangolo.com/
 
+Example nginx config file:
+https://nginx.org/en/docs/example.html
 
 apt packages to install
 uvicorn  # FastAPI server
@@ -14,9 +21,7 @@ supervisor  # Daemonize an app and restart it as needed
 On FreeBSD with pkg
 doas pkg install py311-uvicorn
 doas pkg install supervisor
-doas pkg install py311-wsgi_xmlrpc
-
-
+doas pkg install py311-wsgi_xmlrpc  # May not be needed, try first without.
 
 You may need the Rust compiler to install some Python modules.
 
@@ -26,16 +31,11 @@ $ . ./venv-map/bin/activate
 Note that the dot means "source the file to activate the venv"
 The prompt should now reflect that the venv is active.
 
-Install the Python modules with pip
+Install the Python modules in the venv with pip
 Make sure that pip is at the latest:
 $ python3 -m pip install --upgrade pip
 Install the modules and libraries from the list of requirements.
 $ pip install -r requirements.txt
-
-I am following the example from Dylan Castillo
-https://dylancastillo.co/posts/fastapi-nginx-gunicorn.html
-And the example project at:
-https://github.com/dylanjcastillo/fastapi-nginx-gunicorn
 
 Test the very simple main.py from the tutorial
 $ uvicorn main:app
@@ -56,5 +56,59 @@ INFO:     Application shutdown complete.
 INFO:     Finished server process [100419]
 
 Linux: copy fastapi.conf 
-FreeBSD: stitch the contents into /usr/local/etc/supervisord.conf
+FreeBSD: stitch the contents of fastapi.conf into /usr/local/etc/supervisord.conf
+Make a few more changes to supervisord.conf
+User and password for unix socket to communicate from supervisorctl
+stderr logging
+
+FreeBSD: start the supervisord daemon for manual testing with (rc.conf is for later)
+ $ doas service supervisord onestart 
+Stop it with 
+ $ doas service supervisord onestart 
+
+Test that you can read the app through the Unix domain socket:
+ $ curl --unix-socket /usr/local/www/regionalMap/run/gunicorn.sock localhost
+
+Configure nginx
+In the http block, insert the proxy information
+  upstream app_server {
+      server unix:/home/fastapi-user/fastapi-nginx-gunicorn/run/gunicorn.sock fail_timeout=0;
+  }
+
+Leave the default location / untouched and comment it out. Replace it with the example.
+    location / {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+
+        if (!-f $request_filename) {
+            proxy_pass http://app_server;
+            break;
+        }
+    }
+
+Save the config file and force nginx to reread it:
+ $ doas service nginx restart
+
+Test with curl:
+ $ curl http://localhost/
+It should come back with the hello world from main.py
+
+But we want the server to be general purpose, with maps as just another page
+Edit main.py to add a new property:
+@app.get("/map")
+def read_map():
+    return {"message": "Reading the map."}
+
+Edit nginx.conf to restore the default location / and rename the proxy as location /map
+
+Restart the gunicorn fastapi-app with supervisorctl (or stop and onestart supervisord)
+Restart nginx 
+
+Test with curl
+ $ curl http://localhost 
+Should give you the default nginx page
+ $ curl http://localhost/map
+Should give you the hello world from the map property in main.py
+
 
