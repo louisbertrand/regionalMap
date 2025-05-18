@@ -1,0 +1,50 @@
+Setup Instructions
+
+This article explains about the ASGI interface for Python web apps.
+https://www.infoworld.com/article/2335107/asgi-explained-the-future-of-python-web-development.html
+
+Find out more about FastAPI
+https://fastapi.tiangolo.com/
+
+
+apt packages to install
+uvicorn  # FastAPI server
+supervisor  # Daemonize an app and restart it as needed
+
+You may need the Rust compiler to install some Python modules.
+
+Create a virtual environment under your application directory and activate it.
+$ python3 -m venv venv-map
+$ . ./venv-map/bin/activate
+Note that the dot means "source the file to activate the venv"
+The prompt should now reflect that the venv is active.
+
+Install the Python modules with pip
+Make sure that pip is at the latest:
+$ python3 -m pip install --upgrade pip
+Install the modules and libraries from the list of requirements.
+$ pip install -r requirements.txt
+
+I am following the example from Dylan Castillo
+https://dylancastillo.co/posts/fastapi-nginx-gunicorn.html
+And the example project at:
+https://github.com/dylanjcastillo/fastapi-nginx-gunicorn
+
+Test the very simple main.py from the tutorial
+$ uvicorn main:app
+You should see 
+INFO:     Started server process [100419]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+Then try from another terminal 
+$ curl http://localhost:8000
+You should see the expected response {"message":"It's working!"}
+and a log INFO about the request
+INFO:     127.0.0.1:58030 - "GET / HTTP/1.1" 200 OK
+Type CTRL-C to see the shutdown messages
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [100419]
+
